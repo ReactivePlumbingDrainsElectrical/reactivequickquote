@@ -358,9 +358,9 @@
     </div>
 
     <div class="field">
-      <label for="hardware">Hardware <small>— your cost ex GST</small></label>
+      <label for="subcontractor">Subcontractor <small>— your cost ex GST</small></label>
       <div class="input-wrap money">
-        <input id="hardware" type="number" min="0" step="0.01" placeholder="0" inputmode="decimal">
+        <input id="subcontractor" type="number" min="0" step="0.01" placeholder="0" inputmode="decimal">
       </div>
     </div>
 
@@ -456,6 +456,7 @@
   const MAT_THRESHOLD = 1200;     // tiered markup, per line
   const MAT_TIER1 = 3.33;         // first $1,200 of cost
   const MAT_TIER2 = 2.86;         // every dollar above
+  const SUBBIE_MULT = 1.65;       // subcontractor cost × 1.65 (flat, no tiering)
   const GST = 0.10;
 
   // --- finance (interest-free) ---
@@ -478,21 +479,21 @@
   function calc() {
     const hours = num('hours');
     const matCost = num('materials');
-    const hwCost = num('hardware');
+    const subCost = num('subcontractor');
     const priceBook = num('pricebook');   // added straight, no markup
 
     const labourSell = hours * LABOUR_RATE;
     const matSell = markup(matCost);
-    const hwSell = markup(hwCost);
+    const subSell = subCost * SUBBIE_MULT;
 
-    const sellExGst = labourSell + matSell + hwSell + priceBook;
+    const sellExGst = labourSell + matSell + subSell + priceBook;
     const gst = sellExGst * GST;
     const totalIncGst = sellExGst + gst;
 
     // margin figures. Labour cost is entered inc GST, so it's divided back
     // out before comparing against the ex-GST sell price.
     const labourCost = hours * (LABOUR_COST_INC / (1 + GST));
-    const totalCost = labourCost + matCost + hwCost + priceBook;
+    const totalCost = labourCost + matCost + subCost + priceBook;
     const profit = sellExGst - totalCost;
     const marginPct = sellExGst > 0 ? (profit / sellExGst) * 100 : 0;
 
@@ -568,7 +569,7 @@
     if (open) updateFinance();
   });
 
-  ['hours', 'materials', 'hardware', 'pricebook'].forEach((id) =>
+  ['hours', 'materials', 'subcontractor', 'pricebook'].forEach((id) =>
     g(id).addEventListener('input', calc)
   );
 
